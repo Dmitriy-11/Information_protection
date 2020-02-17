@@ -1,0 +1,9 @@
+E:\GG\protectionInformation\PI\ЛБ1\bin\Debug\ЛБ1.exe.config
+E:\GG\protectionInformation\PI\ЛБ1\bin\Debug\ЛБ1.exe
+E:\GG\protectionInformation\PI\ЛБ1\bin\Debug\ЛБ1.pdb
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\algorithm.csprojAssemblyReference.cache
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\ЛБ1.Form1.resources
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\ЛБ1.Properties.Resources.resources
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\algorithm.csproj.GenerateResource.cache
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\ЛБ1.exe
+E:\GG\protectionInformation\PI\ЛБ1\obj\Debug\ЛБ1.pdb
