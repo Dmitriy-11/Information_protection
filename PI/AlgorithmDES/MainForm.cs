@@ -461,7 +461,7 @@ namespace AlgorithmDES
             {
                 // Берем первый 64-ех битовый блок
                 string oneBlock = OTIn2CC.Substring(0, 64);
-
+                
                 // Начальная перестановка
                 string temp = "";
                 for (int i = 0; i < 64; i++)
@@ -506,9 +506,8 @@ namespace AlgorithmDES
                 rezultEncoderBin = sTemp;
 
                 // Результат складываем по модулю 2 с буфером
-                string tempRez = rezultEncoderBin;
                 rezultEncoderBin = XOR(rezultEncoderBin, C0);
-                C0 = tempRez;
+
 
                 // Перевод двоичных чисел в соответсвующие им символы
                 string templ = "";
@@ -517,6 +516,9 @@ namespace AlgorithmDES
                     templ += Convert.ToChar(Convert.ToInt32(rezultEncoderBin.Substring(i + 7 * i, 8), 2));
                 }
                 rezultDecoder.Add(templ);
+
+                // Заносим блок ШТ в буфер
+                C0 = OTIn2CC.Substring(0, 64);
 
                 // Удаляем дешифрованый блок 
                 OTIn2CC = OTIn2CC.Remove(0, 64);
