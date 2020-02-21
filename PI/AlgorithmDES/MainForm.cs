@@ -108,7 +108,7 @@ namespace AlgorithmDES
                      51, 45, 33, 48, 44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32};
 
         // Начальный вектор
-        string C0 = "0110010110011100011001101001111100010110010011010100110011000010";
+        static string C0;
 
 
         string mod;       // режим перевода
@@ -133,6 +133,9 @@ namespace AlgorithmDES
             // Очищаем поле для ввода
             textBox1.Clear();
             textBox2.Clear();
+
+            // Устанавливаем начальный вектор
+            C0 = "0110010110011100011001101001111100010110010011010100110011000010";
         }
 
         /// <summary>
@@ -149,6 +152,9 @@ namespace AlgorithmDES
             // Очищаем поле для ввода
             textBox1.Clear();
             textBox2.Clear();
+
+            // Устанавливаем начальный вектор
+            C0 = "0110010110011100011001101001111100010110010011010100110011000010";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -355,25 +361,25 @@ namespace AlgorithmDES
         /// </summary>
         private void Encryption()
         {
-            // если не хватает кол-во символом, то в конце добавляем пробелы
+            // Если не хватает кол-во символом, то в конце добавляем пробелы
             while (textBox1.Text.Length % 8 != 0)
             {
                 textBox1.Text += " ";
             }
 
-            // открытый текст в двоичном сс
+            // Открытый текст в двоичном сс
             string OTIn2CC = TransliteIn2CC(textBox1.Text);
 
             List<string> rezultEncoder = new List<string>();
 
             while (OTIn2CC.Length != 0)
             {
-                // берем первый 64-ех битовый блок
+                // Берем первый 64-ех битовый блок
                 string oneBlock = OTIn2CC.Substring(0, 64);
                 // Делаем сложение по модулю 2
                 oneBlock = XOR(C0, oneBlock);
 
-                // начальная перестановка
+                // Начальная перестановка
                 string temp = "";
                 for (int i = 0; i < 64; i++)
                 {
@@ -389,7 +395,7 @@ namespace AlgorithmDES
 
                 #endregion
 
-                // формирование ключей
+                // Формирование ключей
                 List<string> listKey = new List<string>();
                 listKey = generationKey();
 
@@ -407,17 +413,19 @@ namespace AlgorithmDES
                 // Итоговый двоичный код (64-бит)
                 string rezultEncoderBin = string.Empty;
                 rezultEncoderBin = str32bitRight + str32bitLeft;
-
+				
+				 // Завершающая обратная перестановка
                 string sTemp = "";
                 for (int i = 0; i < rezultEncoderBin.Length; i++)
                 {
                     sTemp += rezultEncoderBin[IPB[i] - 1];
                 }
                 rezultEncoderBin = sTemp;
-                // меняем начальный вектор на результат ШТ
+				
+                // Заносим результат ШТ в буфер
                 C0 = rezultEncoderBin;
 
-                // Перевод 2 СС в символы
+                // Перевод двоичных чисел в соответсвующие им символы
                 string templ = "";
                 for (int j = 0; j < rezultEncoderBin.Length / 8; j++)
                 {
@@ -444,105 +452,82 @@ namespace AlgorithmDES
         /// </summary>
         private void Decryption()
         {
-            // список 64-битных строк
-            List<string> str = new List<string>();
             // открытый текст в двоичном сс
             string OTIn2CC = TransliteIn2CC(textBox1.Text);
 
-            // берём первые 64 бита, заносим их в i-ый элемент списка и удаляем их 
-            #region строки по 64 бита с начальной перестановкой
-            if (OTIn2CC.Length > 64)
+            List<string> rezultDecoder = new List<string>();
+
+            while (OTIn2CC.Length !=0)
             {
-                while (OTIn2CC.Length != 0)
-                {
-                    if (OTIn2CC.Length % 64 == 0)
-                    {
-                        string temps = "";
-                        for (int i = 0; i < 64; i++)
-                        {
-                            temps += OTIn2CC[IP[i] - 1];
-                        }
-                        str.Add(temps.ToString());
-                        temps = "";
-                        OTIn2CC = OTIn2CC.Remove(0, 64);
-                    }
-                }
-            }
-            else
-            {
-                string temps = "";
+                // Берем первый 64-ех битовый блок
+                string oneBlock = OTIn2CC.Substring(0, 64);
+
+                // Начальная перестановка
+                string temp = "";
                 for (int i = 0; i < 64; i++)
                 {
-                    temps += OTIn2CC[IP[i] - 1];
+                    temp += oneBlock[IP[i] - 1];
                 }
-                str.Add(temps.ToString());
-            }
-            #endregion
 
-            #region Деление на левую и правую части
-            List<string> str32bitLeft = new List<string>();
-            List<string> str32bitRight = new List<string>();
-            for (int i = 0; i < str.Count; i++)
-            {
-                // Левая часть
-                str32bitLeft.Add(str[i].Substring(0, 32));
-                // Правая часть
-                str32bitRight.Add(str[i].Substring(32, 32));
-            }
-            #endregion
+                #region Деление на левую и правую части
 
-            // формирование ключей
-            List<string> listKey = new List<string>();
-            listKey = generationKey();
+                string str32bitLeft = string.Empty;
+                str32bitLeft = temp.Substring(0, 32);
+                string str32bitRight = string.Empty;
+                str32bitRight = temp.Substring(32, 32);
 
-            // 16 циклов шифрующих преобразований
-            string tepmLeftBlock = "";
-            for (int i = 0; i < str32bitLeft.Count; i++)
-            {
-                for (int j = 15; j > -1 ; j--)
+                #endregion
+
+                // Формирование ключей
+                List<string> listKey = new List<string>();
+                listKey = generationKey();
+
+                // 16 циклов дешифрующих преобразований
+                string tepmLeftBlock = "";
+                for (int j = 15; j > -1; j--)
                 {
-                    tepmLeftBlock = str32bitLeft[i];
+                    tepmLeftBlock = str32bitLeft;
                     // Li = Ri-1
-                    str32bitLeft[i] = str32bitRight[i];
+                    str32bitLeft = str32bitRight;
                     // Ri = Li-1 XOR F
-                    str32bitRight[i] = XOR(tepmLeftBlock, calcF(str32bitRight[i], listKey[j]));
+                    str32bitRight = XOR(tepmLeftBlock, calcF(str32bitRight, listKey[j]));
                 }
-            }
 
-            // Итоговый двоичный код (64-бит)
-            List<string> rezultEncoderBin = new List<string>();
-            for (int i = 0; i < str32bitRight.Count; i++)
-            {
-                rezultEncoderBin.Add(str32bitRight[i] + str32bitLeft[i]);
-            }
+                // Итоговый двоичный код (64-бит)
+                string rezultEncoderBin = string.Empty;
+                rezultEncoderBin = str32bitRight + str32bitLeft;
 
-            for (int i = 0; i < rezultEncoderBin.Count; i++)
-            {
+                // Завершающая обратная перестановка
                 string sTemp = "";
-                for (int j = 0; j < rezultEncoderBin[i].Length; j++)
+                for (int j = 0; j < rezultEncoderBin.Length; j++)
                 {
-                    sTemp += (rezultEncoderBin[i])[IPB[j] - 1];
+                    sTemp += rezultEncoderBin[IPB[j] - 1];
                 }
-                rezultEncoderBin[i] = sTemp;
-            }
+                rezultEncoderBin = sTemp;
 
-            // Перевод 2 СС в символы
-            List<string> rezultEncoder = new List<string>();
-            for (int i = 0; i < rezultEncoderBin.Count; i++)
-            {
-                string temp = "";
-                for (int j = 0; j < rezultEncoderBin[i].Length / 8; j++)
+                // Результат складываем по модулю 2 с буфером
+                string tempRez = rezultEncoderBin;
+                rezultEncoderBin = XOR(rezultEncoderBin, C0);
+                C0 = tempRez;
+
+                // Перевод двоичных чисел в соответсвующие им символы
+                string templ = "";
+                for (int i = 0; i < rezultEncoderBin.Length / 8; i++)
                 {
-                    temp += Convert.ToChar(Convert.ToInt32(rezultEncoderBin[i].Substring(j + 7 * j, 8), 2));
+                    templ += Convert.ToChar(Convert.ToInt32(rezultEncoderBin.Substring(i + 7 * i, 8), 2));
                 }
-                rezultEncoder.Add(temp);
+                rezultDecoder.Add(templ);
+
+                // Удаляем дешифрованый блок 
+                OTIn2CC = OTIn2CC.Remove(0, 64);
+
             }
 
             // Вывод
             string textBox2Text = "";
-            for (int i = 0; i < rezultEncoder.Count; i++)
+            for (int i = 0; i < rezultDecoder.Count; i++)
             {
-                textBox2Text += rezultEncoder[i];
+                textBox2Text += rezultDecoder[i];
             }
             textBox2.Text = textBox2Text;
 
