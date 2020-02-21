@@ -1,0 +1,9 @@
+E:\GG\protectionInformation\PI\AlgorithmDES\bin\Debug\AlgorithmDES.exe.config
+E:\GG\protectionInformation\PI\AlgorithmDES\bin\Debug\AlgorithmDES.exe
+E:\GG\protectionInformation\PI\AlgorithmDES\bin\Debug\AlgorithmDES.pdb
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.csprojAssemblyReference.cache
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.MainForm.resources
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.Properties.Resources.resources
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.csproj.GenerateResource.cache
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.exe
+E:\GG\protectionInformation\PI\AlgorithmDES\obj\Debug\AlgorithmDES.pdb
