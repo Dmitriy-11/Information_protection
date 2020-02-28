@@ -129,6 +129,7 @@ namespace AlgorithmDES
             // Убираем элементы управления
             radioButton3.Checked = false;
             radioButton4.Checked = false;
+            radioButton5.Checked = false;
 
             mod = "Шифровать";
             label1.Text = "Bвод произвольного открытого текста ";
@@ -152,6 +153,7 @@ namespace AlgorithmDES
             // Убираем элементы управления
             radioButton3.Checked = false;
             radioButton4.Checked = false;
+            radioButton5.Checked = false;
 
             mod = "Дешифровать";
             label1.Text = "Шифрограмма ";
@@ -175,14 +177,20 @@ namespace AlgorithmDES
                 case "Шифровать в CBC":
                     EncryptionCBC();
                     break;
-                case "Шифровать в CBF":
-                    EncryptionCBF();
+                case "Шифровать в CFB":
+                    EncryptionCFBorOFB(0);
+                    break;
+                case "Шифровать в OFB":
+                    EncryptionCFBorOFB(1);
                     break;
                 case "Дешифровать в CBC":
                     DecryptionCBC();
                     break;
-                case "Дешифровать в CBF":
-                    DecryptionCBF();
+                case "Дешифровать в CFB":
+                    DecryptionCFBorOFB(0);
+                    break;
+                case "Дешифровать в OFB":
+                    DecryptionCFBorOFB(1);
                     break;
                 default:
                     break;
@@ -461,9 +469,10 @@ namespace AlgorithmDES
         }
 
         /// <summary>
-        /// Шифрация в режиме CBF
+        /// Шифрация в режиме CFB или в OFB
         /// </summary>
-        private void EncryptionCBF()
+        /// <param name="flag"> если 0 - CFB, если 1 - OFB </param>
+        private void EncryptionCFBorOFB(short flag)
         {
             // Если не хватает кол-во символом, то в конце добавляем пробелы
             while (textBox1.Text.Length % 2 != 0)
@@ -530,7 +539,15 @@ namespace AlgorithmDES
 
                 // Изменяем входной блок
                 inputBlock = inputBlock.Remove(0, k);
-                inputBlock = inputBlock + sTemp;
+                if (flag == 0) // режим CFB
+                {
+                    inputBlock = inputBlock + sTemp;
+                }
+                else if(flag == 1) // режим OFB
+                {
+                    inputBlock = inputBlock + rezultEncoderBin.Substring(0, k);
+                }
+                
 
                 // Перевод двоичных чисел в соответсвующие им символы
                 string templ = "";
@@ -643,9 +660,10 @@ namespace AlgorithmDES
         }
 
         /// <summary>
-        /// Дешифрация в режиме CBF
+        /// Дешифрация в режиме CFB или в OFB
         /// </summary>
-        private void DecryptionCBF()
+        /// <param name="flag"> если 0 - CFB, если 1 - OFB </param>
+        private void DecryptionCFBorOFB(short flag)
         {
             // k бит
             int k = 16;
@@ -706,7 +724,14 @@ namespace AlgorithmDES
 
                 // Изменяем входной блок
                 inputBlock = inputBlock.Remove(0, k);
-                inputBlock = inputBlock + ShTIn2CC.Substring(0,k);
+                if (flag == 0) // режим CFB
+                {
+                    inputBlock = inputBlock + ShTIn2CC.Substring(0, k);
+                }
+                else if (flag == 1) // режим OFB
+                {
+                    inputBlock = inputBlock + rezultEncoderBin.Substring(0, k);
+                }
 
                 // Перевод двоичных чисел в соответсвующие им символы
                 string templ = "";
@@ -730,40 +755,75 @@ namespace AlgorithmDES
 
         }
 
+
         /// <summary>
-        /// Сообщение о том, что не выбран режим перевода
+        /// Сообщение о том, что не выбрана функция
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void textBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            //if (mod != "Шифровать" && mod != "Дешифровать")
-            //{
-            //    MessageBox.Show("Выберите режим перевода!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //}
+            if (radioButton1.Checked == false && radioButton2.Checked == false)
+            {
+                MessageBox.Show("Выберите функцию!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
-            int index = mod.IndexOf(" в CB");
-
-            if (index > -1)
+            if (radioButton1.Checked != false || radioButton2.Checked != false)
             {
-                mod = mod.Remove(index);
+                int index = mod.IndexOf(" в ");
+
+                if (index > -1)
+                {
+                    mod = mod.Remove(index);
+                }
+                mod += " в CBC";
             }
-            mod += " в CBC";
         }
 
         private void radioButton4_CheckedChanged(object sender, EventArgs e)
         {
-            int index = mod.IndexOf(" в CB");
-
-            if (index > -1)
+            if (radioButton1.Checked != false || radioButton2.Checked != false)
             {
-                mod = mod.Remove(index);
-            }
+                int index = mod.IndexOf(" в ");
 
-            mod += " в CBF";
+                if (index > -1)
+                {
+                    mod = mod.Remove(index);
+                }
+
+                mod += " в CFB";
+            }
+        }
+
+        private void radioButton5_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked != false || radioButton2.Checked != false)
+            {
+                int index = mod.IndexOf(" в ");
+
+                if (index > -1)
+                {
+                    mod = mod.Remove(index);
+                }
+
+                mod += " в OFB";
+            }
+        }
+        
+        /// <summary>
+        /// Сообщение о том, что не выбран режим шифрации
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (radioButton3.Checked == false && radioButton4.Checked == false && radioButton5.Checked == false)
+            {
+                MessageBox.Show("Выберите режим!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
     }
 }
