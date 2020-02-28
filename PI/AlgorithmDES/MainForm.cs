@@ -126,6 +126,10 @@ namespace AlgorithmDES
         /// <param name="e"></param>
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
+            // Убираем элементы управления
+            radioButton3.Checked = false;
+            radioButton4.Checked = false;
+
             mod = "Шифровать";
             label1.Text = "Bвод произвольного открытого текста ";
             label2.Text = "Шифрограмма";
@@ -145,6 +149,10 @@ namespace AlgorithmDES
         /// <param name="e"></param>
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
+            // Убираем элементы управления
+            radioButton3.Checked = false;
+            radioButton4.Checked = false;
+
             mod = "Дешифровать";
             label1.Text = "Шифрограмма ";
             label2.Text = "Открытый текст ";
@@ -164,12 +172,17 @@ namespace AlgorithmDES
 
             switch (mod)
             {
-                case "Шифровать":
-                    Encryption();
-                    
+                case "Шифровать в CBC":
+                    EncryptionCBC();
                     break;
-                case "Дешифровать":
-                    Decryption();
+                case "Шифровать в CBF":
+                    EncryptionCBF();
+                    break;
+                case "Дешифровать в CBC":
+                    DecryptionCBC();
+                    break;
+                case "Дешифровать в CBF":
+                    DecryptionCBF();
                     break;
                 default:
                     break;
@@ -357,9 +370,9 @@ namespace AlgorithmDES
         }
 
         /// <summary>
-        /// Шифрация
+        /// Шифрация в режиме СВС
         /// </summary>
-        private void Encryption()
+        private void EncryptionCBC()
         {
             // Если не хватает кол-во символом, то в конце добавляем пробелы
             while (textBox1.Text.Length % 8 != 0)
@@ -448,9 +461,103 @@ namespace AlgorithmDES
         }
 
         /// <summary>
-        /// Дешифрация
+        /// Шифрация в режиме CBF
         /// </summary>
-        private void Decryption()
+        private void EncryptionCBF()
+        {
+            // Если не хватает кол-во символом, то в конце добавляем пробелы
+            while (textBox1.Text.Length % 2 != 0)
+            {
+                textBox1.Text += " ";
+            }
+
+            // k бит
+            int k = 16;
+
+            // Открытый текст в двоичном сс
+            string OTIn2CC = TransliteIn2CC(textBox1.Text);
+            List<string> rezultEncoder = new List<string>();
+            string inputBlock = C0;
+
+            while (OTIn2CC.Length != 0)
+            {
+                // Начальная перестановка
+                string temp = "";
+                for (int i = 0; i < 64; i++)
+                {
+                    temp += inputBlock[IP[i] - 1];
+                }
+
+                #region Деление на левую и правую части
+
+                string str32bitLeft = string.Empty;
+                str32bitLeft = temp.Substring(0, 32);
+                string str32bitRight = string.Empty;
+                str32bitRight = temp.Substring(32, 32);
+
+                #endregion
+
+                // Формирование ключей
+                List<string> listKey = new List<string>();
+                listKey = generationKey();
+
+                // 16 циклов шифрующих преобразований
+                string tepmLeftBlock = "";
+                for (int j = 0; j < 16; j++)
+                {
+                    tepmLeftBlock = str32bitLeft;
+                    // Li = Ri-1
+                    str32bitLeft = str32bitRight;
+                    // Ri = Li-1 XOR F
+                    str32bitRight = XOR(tepmLeftBlock, calcF(str32bitRight, listKey[j]));
+                }
+
+                // Итоговый двоичный код (64-бит)
+                string rezultEncoderBin = string.Empty;
+                rezultEncoderBin = str32bitRight + str32bitLeft;
+
+                // Завершающая обратная перестановка
+                string sTemp = "";
+                for (int i = 0; i < rezultEncoderBin.Length; i++)
+                {
+                    sTemp += rezultEncoderBin[IPB[i] - 1];
+                }
+                rezultEncoderBin = sTemp;
+                sTemp = "";
+
+                // Складываем по модулю 2 первые k бит ОТ и выходного блоко
+                sTemp = XOR(rezultEncoderBin.Substring(0, k), OTIn2CC.Substring(0, k));
+
+                // Изменяем входной блок
+                inputBlock = inputBlock.Remove(0, k);
+                inputBlock = inputBlock + sTemp;
+
+                // Перевод двоичных чисел в соответсвующие им символы
+                string templ = "";
+                for (int j = 0; j < sTemp.Length / 8; j++)
+                {
+                    templ += Convert.ToChar(Convert.ToInt32(sTemp.Substring(j + 7 * j, 8), 2));
+                }
+                rezultEncoder.Add(templ);
+
+                // Удаляем зашифрованый блок 
+                OTIn2CC = OTIn2CC.Remove(0, k);
+            }
+
+            // Вывод
+            string textBox2Text = "";
+            for (int i = 0; i < rezultEncoder.Count; i++)
+            {
+                textBox2Text += rezultEncoder[i];
+            }
+            textBox2.Text = textBox2Text;
+
+        }
+
+        /// <summary>
+        /// Дешифрация в режиме CBC
+        /// </summary>
+        private void DecryptionCBC()
         {
             // открытый текст в двоичном сс
             string OTIn2CC = TransliteIn2CC(textBox1.Text);
@@ -536,16 +643,127 @@ namespace AlgorithmDES
         }
 
         /// <summary>
+        /// Дешифрация в режиме CBF
+        /// </summary>
+        private void DecryptionCBF()
+        {
+            // k бит
+            int k = 16;
+
+            // Шифртекст в двоичном сс
+            string ShTIn2CC = TransliteIn2CC(textBox1.Text);
+            List<string> rezultDecoder = new List<string>();
+            string inputBlock = C0;
+
+            while (ShTIn2CC.Length != 0)
+            {
+                // Начальная перестановка
+                string temp = "";
+                for (int i = 0; i < 64; i++)
+                {
+                    temp += inputBlock[IP[i] - 1];
+                }
+
+                #region Деление на левую и правую части
+
+                string str32bitLeft = string.Empty;
+                str32bitLeft = temp.Substring(0, 32);
+                string str32bitRight = string.Empty;
+                str32bitRight = temp.Substring(32, 32);
+
+                #endregion
+
+                // Формирование ключей
+                List<string> listKey = new List<string>();
+                listKey = generationKey();
+
+                // 16 циклов шифрующих преобразований
+                string tepmLeftBlock = "";
+                for (int j = 0; j < 16; j++)
+                {
+                    tepmLeftBlock = str32bitLeft;
+                    // Li = Ri-1
+                    str32bitLeft = str32bitRight;
+                    // Ri = Li-1 XOR F
+                    str32bitRight = XOR(tepmLeftBlock, calcF(str32bitRight, listKey[j]));
+                }
+
+                // Итоговый двоичный код (64-бит)
+                string rezultEncoderBin = string.Empty;
+                rezultEncoderBin = str32bitRight + str32bitLeft;
+
+                // Завершающая обратная перестановка
+                string sTemp = "";
+                for (int i = 0; i < rezultEncoderBin.Length; i++)
+                {
+                    sTemp += rezultEncoderBin[IPB[i] - 1];
+                }
+                rezultEncoderBin = sTemp;
+                sTemp = "";
+
+                // Складываем по модулю 2 первые k бит ОТ и выходного блока
+                sTemp = XOR(rezultEncoderBin.Substring(0, k), ShTIn2CC.Substring(0, k));
+
+                // Изменяем входной блок
+                inputBlock = inputBlock.Remove(0, k);
+                inputBlock = inputBlock + ShTIn2CC.Substring(0,k);
+
+                // Перевод двоичных чисел в соответсвующие им символы
+                string templ = "";
+                for (int j = 0; j < sTemp.Length / 8; j++)
+                {
+                    templ += Convert.ToChar(Convert.ToInt32(sTemp.Substring(j + 7 * j, 8), 2));
+                }
+                rezultDecoder.Add(templ);
+
+                // Удаляем зашифрованый блок 
+                ShTIn2CC = ShTIn2CC.Remove(0, k);
+            }
+
+            // Вывод
+            string textBox2Text = "";
+            for (int i = 0; i < rezultDecoder.Count; i++)
+            {
+                textBox2Text += rezultDecoder[i];
+            }
+            textBox2.Text = textBox2Text;
+
+        }
+
+        /// <summary>
         /// Сообщение о том, что не выбран режим перевода
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void textBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (mod != "Шифровать" && mod != "Дешифровать")
+            //if (mod != "Шифровать" && mod != "Дешифровать")
+            //{
+            //    MessageBox.Show("Выберите режим перевода!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //}
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+            int index = mod.IndexOf(" в CB");
+
+            if (index > -1)
             {
-                MessageBox.Show("Выберите режим перевода!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                mod = mod.Remove(index);
             }
+            mod += " в CBC";
+        }
+
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            int index = mod.IndexOf(" в CB");
+
+            if (index > -1)
+            {
+                mod = mod.Remove(index);
+            }
+
+            mod += " в CBF";
         }
     }
 }
